@@ -26,3 +26,13 @@ int main(void){
   }
   return 0;
 }
+
+void initTimer0()
+{
+
+}
+
+void initTimer1()
+{
+  
+}
