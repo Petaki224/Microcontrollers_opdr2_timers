@@ -8,7 +8,7 @@ volatile uint8_t centiBeatsCounted = 0;
 ISR(TIMER1_COMPA_vect)
 {
     centiBeatsCounted++;
-    Serial.write(centiBeatsCounted);
+    PORTB ^= (1<<PB5);
 }
 
 void display_centibeats(uint8_t centibeats){
@@ -22,6 +22,7 @@ void display_centibeats(uint8_t centibeats){
 int main(void){
   initTimer0();
   initTimer1();
+  DDRB |= (1<<PB5);
 
   sei();
   Serial.begin(9600);
