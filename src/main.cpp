@@ -19,8 +19,8 @@ void display_centibeats(uint8_t centibeats){
 }
 
 ISR(TIMER0_COMPA_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
-  miliseconds++;
-  PORTB |= (1<<PB5);
+  miliseconds++; // testcode. Mag Weg
+  PORTB |= (1<<PB5); // testcode. mag weg
 }
 
 
