@@ -5,8 +5,8 @@ void initTimer0();
 void initTimer1();
 
 
-enum bstate {pressed, released};
-enum bstate button_state(void);
+enum bstate {pressed, released}; //maakt twee states aan die de knop kan hebben
+enum bstate button_state(void); // geeft aan dat de functie er nog aan komt na de main
 enum bstate lastState = released;  //houdt de laatste status bij
 
 volatile uint8_t centiBeatsCounted = 0;
@@ -86,13 +86,31 @@ void display_centibeats(uint8_t centibeats){
 
 }
 
+ISR(INT0_vect) {
+    // Check if the button is pressed or released
+    if (!(PIND & (1 << PD2))) {  // Button pressed (logic 0)
+        lastState = pressed;
+    } else {  // Button released (logic 1)
+        lastState = released;
+    }
+
+    // Start Timer0 for 15 ms debounce delay
+    TCCR0B |= (1 << CS02) | (1 << CS00);  // Enable Timer0 with prescaler 1024
+}
+
+
 ISR(TIMER0_COMPA_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
-  
+  TCCR0B &= ~((1 << CS02) | (1 << CS00));  // Stop the timer
+  TCNT0 = 0; // reset timer counter
+
+  // int0 opnieuw aanzetten zodat de button state opnieuw gezien kan worden
+  EIFR |= (1 << INTF0);  // reset interrupt bit/flag van int0
+  EIMSK |= (1 << INT0);  // Re-enable INT0 interrupt
 }
 
 int main(void){
   initTimer0();
-  initTimer1();
+  // initTimer1();
   DDRB |= (1<<PB5);
 
   sei();
@@ -115,15 +133,12 @@ int main(void){
       display_centibeats(centiBeatsCounted);
       prevCentiBeat = centiBeatsCounted;
       }
-    
-        enum bstate currentState = button_state();
-    if (lastState == pressed && currentState == released){
-      lastState = currentState;
-      PORTB |= (1<<PB5);
-      // hier de centibeat teller en ophogen van display logic
-    }else{
-      // hier de logic dat de teller stopt
-    }
+
+    if (lastState == pressed) {
+      PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
+    } else if (lastState == released) {
+      PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
+      }
   }
   return 0;
 }
@@ -131,14 +146,14 @@ int main(void){
 void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
   TCCR0A = (1<<WGM01); // zet CTC mode aan voor timer interupt
   TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler uit. (aan is 1024)
-  OCR0A = 233; // reset timer wanneer opgegeven waarde berreikt is ipv overflow (255)
-  TCNT0 = 0; // Zet timer register op 0
-  TIMSK0 = (1<<OCIE0A); // Enabled matching van de TCCR0A
+  OCR0A = 233; // reset timer wanneer opgegeven waarde berreikt is (15 ms)
+  TCNT0 = 0; // reset timer counter
+  TIMSK0 |= (1<<OCIE0A); // Enabled matching van de TCCR0A
   }
 
 void initTimer1()
 // timer1 mode 4, CTC, om bij 13500 timer ticks interupt te gooien en dan te resetten naar 0;
-// OCR1A 13500. \n
+// OCR1A 13500. 
 // OCR1AH = 00110100, OCR1AL = 10111100.
 // WGM13 0, WGM12(CTC1) 1, WGM11(PWM11) 0, WGM10(PWM10) 0
 // prescaler 1024 --> CS12 1, CS11 0, CS10 1;
@@ -149,17 +164,4 @@ void initTimer1()
   OCR1A = 13500;
   TIMSK1 |= (1<<OCIE1A);
   // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid 
-}
-
-enum bstate button_state(void) {
-  static enum bstate currentState = released;
-  
-    if (!(PIND & (1 << PC2))) {  // Controleert of de knop ingedrukt (0) is
-      currentState = pressed; 
-      // TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler aan op 1024
-    } else {
-      currentState = released;
-      // TCCR0B |= (0<<CS02)|(0<<CS00); // zet prescaler uit. (aan is 1024)   
-    }
-  return currentState;
 }
