@@ -3,7 +3,11 @@
 
 void initTimer0();
 void initTimer1();
-void display_centibeats(uint8_t centibeats);
+
+
+enum bstate {pressed, released};
+enum bstate button_state(void);
+enum bstate lastState = released;  //houdt de laatste status bij
 
 volatile uint8_t centiBeatsCounted = 0;
 volatile uint8_t miliseconds = 0;
@@ -15,6 +19,7 @@ ISR(TIMER1_COMPA_vect)
 {
     centiBeatsCounted++;
     // display_centibeats(centiBeatsCounted);
+    PORTB |= (1<<PB5);
 }
 
 void display_centibeats(uint8_t centibeats){
@@ -82,12 +87,8 @@ void display_centibeats(uint8_t centibeats){
 }
 
 ISR(TIMER0_COMPA_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
-  miliseconds++; // testcode. Mag Weg
-  PORTB |= (1<<PB5); // testcode. mag weg
+  
 }
-
-
-
 
 int main(void){
   initTimer0();
@@ -115,22 +116,21 @@ int main(void){
       prevCentiBeat = centiBeatsCounted;
       }
     
-    
-
-
-
-
-
-
-
-
+        enum bstate currentState = button_state();
+    if (lastState == pressed && currentState == released){
+      lastState = currentState;
+      PORTB |= (1<<PB5);
+      // hier de centibeat teller en ophogen van display logic
+    }else{
+      // hier de logic dat de teller stopt
+    }
   }
   return 0;
 }
 
 void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
   TCCR0A = (1<<WGM01); // zet CTC mode aan voor timer interupt
-  TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler op 1024
+  TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler uit. (aan is 1024)
   OCR0A = 233; // reset timer wanneer opgegeven waarde berreikt is ipv overflow (255)
   TCNT0 = 0; // Zet timer register op 0
   TIMSK0 = (1<<OCIE0A); // Enabled matching van de TCCR0A
@@ -149,4 +149,17 @@ void initTimer1()
   OCR1A = 13500;
   TIMSK1 |= (1<<OCIE1A);
   // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid 
+}
+
+enum bstate button_state(void) {
+  static enum bstate currentState = released;
+  
+    if (!(PIND & (1 << PC2))) {  // Controleert of de knop ingedrukt (0) is
+      currentState = pressed; 
+      // TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler aan op 1024
+    } else {
+      currentState = released;
+      // TCCR0B |= (0<<CS02)|(0<<CS00); // zet prescaler uit. (aan is 1024)   
+    }
+  return currentState;
 }
