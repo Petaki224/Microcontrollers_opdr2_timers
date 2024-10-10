@@ -1,5 +1,9 @@
 #include <Arduino.h>
 
+ISR(TIMER1_COMPA_vect)
+{
+    OCR1A_ISR();
+}
 
 void display_centibeats(uint8_t centibeats){
 
