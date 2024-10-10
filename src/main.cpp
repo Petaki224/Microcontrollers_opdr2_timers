@@ -69,11 +69,6 @@ void initTimer1()
 {
   TCCR1B |= (1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);
   OCR1A = 13500;
-<<<<<<< Updated upstream
-}
-// INTERUPT AANZETTEN
-=======
   TIMSK1 |= (1<<OCIE1A);
   // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid 
 }
->>>>>>> Stashed changes
