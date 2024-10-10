@@ -28,8 +28,14 @@ int main(void){
   return 0;
 }
 
-void initTimer0()
-{
+void initTimer0(){ // setup Timer 0 voor delay van 15 miliseconden
+  TCCR0A = (1<<WGM01); // zet CTC mode aan voor timer interupt
+  TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler 1/1024
+
+  //bepaalt wanneer de interupt moet afgaan? welke van de twee?
+  // OCR0A = (); 
+  // TCNT0 = ();
+
 
 }
 
