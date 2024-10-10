@@ -16,6 +16,11 @@ void display_centibeats(uint8_t centibeats){
 
 }
 
+ISR(TIMER0_OVF_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
+  Serial.print("test");
+
+}
+
 
 
 
@@ -29,6 +34,18 @@ int main(void){
   Serial.write("Ready");
   
   while (true){
+<<<<<<< Updated upstream
+=======
+    initTimer0();
+
+
+
+
+
+
+
+
+>>>>>>> Stashed changes
 
   }
   return 0;
@@ -37,13 +54,10 @@ int main(void){
 void initTimer0(){ // setup Timer 0 voor delay van 15 miliseconden
   TCCR0A = (1<<WGM01); // zet CTC mode aan voor timer interupt
   TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler 1/1024
-
-  //bepaalt wanneer de interupt moet afgaan? welke van de twee?
-  // OCR0A = (); 
-  // TCNT0 = ();
-
-
-}
+  OCR0A = 233; //reset timer wanneer deze waarde berreikt is
+  TCNT0 = 0; //Zet timer register op 0
+  sei(); // Set global interupt Enable
+  }
 
 void initTimer1()
 // timer1 mode 4, CTC, om bij 13500 timer ticks interupt te gooien en dan te resetten naar 0;
