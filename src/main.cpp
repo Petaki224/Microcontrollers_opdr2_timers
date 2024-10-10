@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <stdint.h>
+#include <Wire.h>
 
 void initTimer0();
 void initTimer1();
