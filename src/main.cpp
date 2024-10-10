@@ -4,6 +4,7 @@ void initTimer0();
 void initTimer1();
 
 volatile uint8_t centiBeatsCounted = 0;
+volatile uint8_t miliseconds = 0;
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -14,11 +15,12 @@ ISR(TIMER1_COMPA_vect)
 void display_centibeats(uint8_t centibeats){
 
 
+
 }
 
-ISR(TIMER0_OVF_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
-  Serial.print("test");
-
+ISR(TIMER0_COMPA_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
+  miliseconds++;
+  PORTB |= (1<<PB5);
 }
 
 
@@ -34,9 +36,6 @@ int main(void){
   Serial.write("Ready");
   
   while (true){
-<<<<<<< Updated upstream
-=======
-    initTimer0();
 
 
 
@@ -45,18 +44,17 @@ int main(void){
 
 
 
->>>>>>> Stashed changes
 
   }
   return 0;
 }
 
-void initTimer0(){ // setup Timer 0 voor delay van 15 miliseconden
+void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
   TCCR0A = (1<<WGM01); // zet CTC mode aan voor timer interupt
-  TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler 1/1024
-  OCR0A = 233; //reset timer wanneer deze waarde berreikt is
-  TCNT0 = 0; //Zet timer register op 0
-  sei(); // Set global interupt Enable
+  TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler op 1024
+  OCR0A = 233; // reset timer wanneer opgegeven waarde berreikt is ipv overflow (255)
+  TCNT0 = 0; // Zet timer register op 0
+  TIMSK0 = (1<<OCIE0A); // Enabled matching van de TCCR0A
   }
 
 void initTimer1()
@@ -67,12 +65,10 @@ void initTimer1()
 // TIFR1 = 00000010;
 // WGM13 0, WGM12(CTC1) 1, WGM11(PWM11) 0, WGM10(PWM10) 0
 // prescaler 1024 --> CS12 1, CS11 0, CS10 1;
-// Set OCIE1A voor output compare A Match interupt enable door OCF1A in te stellen
+// Set OCIE1A voor output compare A Match interupt enable
 // TCCR1A moest alles op 0 staan, wat al default is.
 {
   TCCR1B |= (1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);
   OCR1A = 13500;
-  TIMSK1 |= (1<<OCIE1A);
-  TIFR1 |= (1<<OCF1A);
 }
 // INTERUPT AANZETTEN
