@@ -111,11 +111,14 @@ int main(void){
       
     //   PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
         
-  }
-    else {
-      stopTimer1();
-      PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
     }
+      else {
+        stopTimer1();
+        while (lastState == released)
+        {
+          PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
+        }
+      }
   }
   return 0;
 }
@@ -153,12 +156,12 @@ void initTimer1()
 }
 void startTimer1()
 {
-  TCCR1B |= (1<<WGM12)|(1<<CS12)|(1<<CS10);
-  Serial.println("START");
+  TCCR1B |= ((1<<CS12)|(1<<CS10));
+  // Serial.println("START");
 }
 
 void stopTimer1()
 {
-  TCCR1B &= ~((1<<WGM12)|(1<<CS12)|(1<<CS10));
-  Serial.println("STOP");
+  TCCR1B &= ~((1<<CS12)|(1<<CS10));
+  // Serial.println("STOP");
 }
