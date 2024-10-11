@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+void initButton();
 void initTimer0();
 void initTimer1();
 
@@ -75,14 +76,8 @@ ISR(TIMER0_COMPA_vect) {
 }
 
 int main(void){
-  DDRD &= ~(1 << PD2);  // Zet PD2 als input
-  PORTD |= (1 << PD2);  // Zet de interne pull-up weerstand aan
 
-  // Zet INT0 op zowel falling als rising edge
-  EICRA |= (1 << ISC00);  // Zet interrupt bij elke edge
-  EIMSK |= (1 << INT0);   // Zet INT0 interrupt aan
-
-  // Initialiseer Timers
+  initButton();
   initTimer0();
   initTimer1();
 
@@ -109,6 +104,16 @@ int main(void){
       }
   }
   return 0;
+}
+
+void initButton()
+{
+  DDRD &= ~(1 << PD2);  // Zet PD2 als input
+  PORTD |= (1 << PD2);  // Zet de interne pull-up weerstand aan
+
+  // Zet INT0 op zowel falling als rising edge
+  EICRA |= (1 << ISC00);  // Zet interrupt bij elke edge
+  EIMSK |= (1 << INT0);   // Zet INT0 interrupt aan
 }
 
 void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
