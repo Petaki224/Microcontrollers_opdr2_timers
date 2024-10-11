@@ -86,22 +86,31 @@ int main(void){
   Serial.begin(9600);
   Serial.write("Ready");
   
-  while (true){   
+  while (true){
     if (lastState == pressed) {
-    //   PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
-        Serial.write("last state pressed");
-      if (centiBeatsCounted>15) {
       centiBeatsCounted = 0;
       prevCentiBeat = 0;
       display_centibeats(centiBeatsCounted);
+      while (lastState == pressed)
+      {
+        Serial.write("last state pressed");
+        if (centiBeatsCounted>15) {
+        centiBeatsCounted = 0;
+        prevCentiBeat = 0;
+        display_centibeats(centiBeatsCounted);
+        }
+        if (centiBeatsCounted > prevCentiBeat && (centiBeatsCounted <16)) {
+        display_centibeats(centiBeatsCounted);
+        prevCentiBeat = centiBeatsCounted;
+        }
       }
-      if (centiBeatsCounted > prevCentiBeat && (centiBeatsCounted <16)) {
-      display_centibeats(centiBeatsCounted);
-      prevCentiBeat = centiBeatsCounted;
-      }
-    } else if (lastState == released) {
-      PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
-      }
+      
+    //   PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
+        
+  }
+    else {
+    PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
+    }
   }
   return 0;
 }
