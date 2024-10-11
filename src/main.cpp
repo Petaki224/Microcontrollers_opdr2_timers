@@ -19,11 +19,9 @@ uint8_t prevCentiBeat = 0;
 const uint16_t totalTimer1Ticks = 13500;
 
 
-ISR(TIMER1_COMPA_vect)
+ISR(TIMER1_COMPA_vect) // timer1 output compare interupt
 {
     centiBeatsCounted++;
-    // display_centibeats(centiBeatsCounted);
-    // PORTB |= (1<<PB5);
 }
 
 void display_centibeats(uint8_t centibeats){
@@ -85,8 +83,6 @@ int main(void){
 
   sei();
   Wire.begin();
-  Serial.begin(9600);
-  Serial.write("Ready");
   
   while (true){
     if (lastState == pressed) {
@@ -96,7 +92,6 @@ int main(void){
       display_centibeats(centiBeatsCounted);
       while (lastState == pressed)
       {
-        Serial.write("last state pressed");
         if (centiBeatsCounted>15) {
         centiBeatsCounted = 0;
         prevCentiBeat = 0;
@@ -107,9 +102,7 @@ int main(void){
         prevCentiBeat = centiBeatsCounted;
         }
       }
-      
-    //   PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
-        
+              
     }
       else {
         stopTimer1();
@@ -140,27 +133,25 @@ void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
   }
 
 void initTimer1()
-// timer1 mode 4, CTC, om bij 13500 timer ticks interupt te gooien en dan te resetten naar 0;
+// timer1 mode 4, CTC, om bij 13500 timer ticks met een prescalder van 1024 interupt te gooien en dan te resetten naar 0;
 // OCR1A 13500.
-// OCR1AH = 00110100, OCR1AL = 10111100.
 // WGM13 0, WGM12(CTC1) 1, WGM11(PWM11) 0, WGM10(PWM10) 0
 // prescaler 1024 --> CS12 1, CS11 0, CS10 1;
 // Set OCIE1A voor output compare A Match interupt enable
 // TCCR1A moest alles op 0 staan, wat al default is.
+// TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid
+
 {
-  TCCR1B |= (1<<WGM12);
-  OCR1A = totalTimer1Ticks;
-  TIMSK1 |= (1<<OCIE1A);
-  // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid
+  TCCR1B |= (1<<WGM12); // timer1 mode 4, CTC;
+  OCR1A = totalTimer1Ticks; // 13500 timer ticks
+  TIMSK1 |= (1<<OCIE1A); // Set OCIE1A voor output compare A Match interupt enable
 }
 void startTimer1()
 {
   TCCR1B |= ((1<<CS12)|(1<<CS10));
-  // Serial.println("START");
 }
 
 void stopTimer1()
 {
   TCCR1B &= ~((1<<CS12)|(1<<CS10));
-  // Serial.println("STOP");
 }
