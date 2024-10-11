@@ -4,6 +4,9 @@
 void initButton();
 void initTimer0();
 void initTimer1();
+void startTimer1();
+void stopTimer1();
+
 
 
 enum bstate {pressed, released}; //maakt twee states aan die de knop kan hebben
@@ -88,6 +91,7 @@ int main(void){
   
   while (true){
     if (lastState == pressed) {
+      startTimer1();
       centiBeatsCounted = 0;
       prevCentiBeat = 0;
       display_centibeats(centiBeatsCounted);
@@ -109,7 +113,8 @@ int main(void){
         
   }
     else {
-    PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
+      stopTimer1();
+      PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
     }
   }
   return 0;
@@ -130,20 +135,30 @@ void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
   OCR0A = 233; // reset timer wanneer opgegeven waarde berreikt is (15 ms)
   TCNT0 = 0; // reset timer counter
   TIMSK0 |= (1<<OCIE0A); // Enabled matching van de TCCR0A
-
   }
 
 void initTimer1()
 // timer1 mode 4, CTC, om bij 13500 timer ticks interupt te gooien en dan te resetten naar 0;
-// OCR1A 13500. 
+// OCR1A 13500.
 // OCR1AH = 00110100, OCR1AL = 10111100.
 // WGM13 0, WGM12(CTC1) 1, WGM11(PWM11) 0, WGM10(PWM10) 0
 // prescaler 1024 --> CS12 1, CS11 0, CS10 1;
 // Set OCIE1A voor output compare A Match interupt enable
 // TCCR1A moest alles op 0 staan, wat al default is.
 {
-  TCCR1B |= (1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);
+  TCCR1B |= (1<<WGM12);
   OCR1A = totalTimer1Ticks;
   TIMSK1 |= (1<<OCIE1A);
-  // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid 
+  // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid
+}
+void startTimer1()
+{
+  TCCR1B |= (1<<WGM12)|(1<<CS12)|(1<<CS10);
+  Serial.println("START");
+}
+
+void stopTimer1()
+{
+  TCCR1B &= ~((1<<WGM12)|(1<<CS12)|(1<<CS10));
+  Serial.println("STOP");
 }
