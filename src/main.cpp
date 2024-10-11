@@ -24,65 +24,27 @@ ISR(TIMER1_COMPA_vect)
 }
 
 void display_centibeats(uint8_t centibeats){
+  uint8_t displayArray[16];
+  displayArray[0] = 0xC0;
+  displayArray[1] = 0xF9;
+  displayArray[2] = 0xA4;
+  displayArray[3] = 0xB0;
+  displayArray[4] = 0x99;
+  displayArray[5] = 0x92;
+  displayArray[6] = 0x82;
+  displayArray[7] = 0xF8;
+  displayArray[8] = 0x80;
+  displayArray[9] = 0x90;
+  displayArray[10] = 0x88;
+  displayArray[11] = 0x83;
+  displayArray[12] = 0xC6;
+  displayArray[13] = 0xA1;
+  displayArray[14] = 0x86;
+  displayArray[15] = 0x8E;
+
   Wire.beginTransmission(PCF8574_address);
-  // Wire.write(centibeats);
   Serial.println(centibeats);
-  switch (centibeats)
-  {
-  case 0:
-    Wire.write(0xC0);
-    break;
-  case 1:
-    Wire.write(0xF9);
-    break;
-  case 2:
-    Wire.write(0xA4);
-    break; 
-  case 3:
-    Wire.write(0xB0);
-    break;
-  case 4:
-    Wire.write(0x99);
-    break;
-  case 5:
-    Wire.write(0x92); // 5 getest
-    break;
-  case 6:
-    Wire.write(0x82);
-    break;
-  case 7:
-    Wire.write(0xF8);
-    break;
-  case 8:
-    Wire.write(0x80);
-    break;
-  case 9:
-    Wire.write(0x90);
-    break;
-  case 10:
-    Wire.write(0x88);
-    break;
-  case 11:
-    Wire.write(0x83);
-    break;
-  case 12:
-    Wire.write(0xC6);
-    break;
-  case 13:
-    Wire.write(0xA1);
-    break;
-  case 14:
-    Wire.write(0x86);
-    break;
-  case 15:
-    Wire.write(0x8E);
-    break;
-    
-  default:
-    Wire.write(0x00);
-    break;
-  }
-  
+  Wire.write(displayArray[centibeats]);
   Wire.endTransmission();
 
 }
