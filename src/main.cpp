@@ -43,7 +43,6 @@ void display_centibeats(uint8_t centibeats){
   displayArray[15] = 0x8E;
 
   Wire.beginTransmission(PCF8574_address);
-  Serial.println(centibeats);
   Wire.write(displayArray[centibeats]);
   Wire.endTransmission();
 
