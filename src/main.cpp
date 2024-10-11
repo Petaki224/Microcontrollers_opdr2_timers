@@ -8,7 +8,6 @@ void startTimer1();
 void stopTimer1();
 
 
-
 enum bstate {pressed, released}; //maakt twee states aan die de knop kan hebben
 enum bstate button_state(void); // geeft aan dat de functie er nog aan komt na de main
 enum bstate lastState = released;  //houdt de laatste status bij
