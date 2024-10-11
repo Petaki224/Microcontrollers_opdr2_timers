@@ -88,31 +88,42 @@ void display_centibeats(uint8_t centibeats){
 }
 
 ISR(INT0_vect) {
-    // Check if the button is pressed or released
-    if (!(PIND & (1 << PD2))) {  // Button pressed (logic 0)
+    // Check of de knop is ingedrukt of losgelaten
+    if (!(PIND & (1 << PD2))) {  // Knop ingedrukt (logic 0)
         lastState = pressed;
-    } else {  // Button released (logic 1)
+    } else {  // Knop losgelaten (logic 1)
         lastState = released;
     }
 
-    // Start Timer0 for 15 ms debounce delay
-    TCCR0B |= (1 << CS02) | (1 << CS00);  // Enable Timer0 with prescaler 1024
+    // Zet INT0 tijdelijk uit om ruis te voorkomen
+    EIMSK &= ~(1 << INT0);
+
+    // Start Timer0 voor debounce delay
+    TCCR0B |= (1 << CS02) | (1 << CS00);  // Start Timer0 met prescaler 1024
 }
 
 
-ISR(TIMER0_COMPA_vect){ // functie word uitgevoerd wanneer timer0 interrupt afgaat
-  TCCR0B &= ~((1 << CS02) | (1 << CS00));  // Stop the timer
-  TCNT0 = 0; // reset timer counter
-
-  // int0 opnieuw aanzetten zodat de button state opnieuw gezien kan worden
-  EIFR |= (1 << INTF0);  // reset interrupt bit/flag van int0
-  EIMSK |= (1 << INT0);  // Re-enable INT0 interrupt
+ISR(TIMER0_COMPA_vect) {
+    // Stop Timer0
+    TCCR0B &= ~((1 << CS02) | (1 << CS00));  // Stop de timer
+    TCNT0 = 0;  // Reset de timer teller
+    
+    // Zet INT0 weer aan voor nieuwe knopdetectie
+    EIFR |= (1 << INTF0);  // Reset INT0 interrupt vlag
+    EIMSK |= (1 << INT0);  // Schakel INT0 weer in
 }
 
 int main(void){
+  DDRD &= ~(1 << PD2);  // Zet PD2 als input
+  PORTD |= (1 << PD2);  // Zet de interne pull-up weerstand aan
+
+  // Zet INT0 op zowel falling als rising edge
+  EICRA |= (1 << ISC00);  // Zet interrupt bij elke edge
+  EIMSK |= (1 << INT0);   // Zet INT0 interrupt aan
+
+  // Initialiseer Timers
   initTimer0();
   initTimer1();
-  DDRB |= (1<<PB5);
 
   sei();
   Wire.begin();
@@ -121,16 +132,14 @@ int main(void){
   
   while (true){   
     if (lastState == pressed) {
-      PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
-
-      if (centiBeatsCounted>15)
-    {
+    //   PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
+        Serial.write("last state pressed");
+      if (centiBeatsCounted>15) {
       centiBeatsCounted = 0;
       prevCentiBeat = 0;
       display_centibeats(centiBeatsCounted);
-    }
-    if (centiBeatsCounted > prevCentiBeat && (centiBeatsCounted <16))
-      {
+      }
+      if (centiBeatsCounted > prevCentiBeat && (centiBeatsCounted <16)) {
       display_centibeats(centiBeatsCounted);
       prevCentiBeat = centiBeatsCounted;
       }
@@ -143,10 +152,10 @@ int main(void){
 
 void initTimer0(void){ // setup Timer 0 voor delay van 15 miliseconden
   TCCR0A = (1<<WGM01); // zet CTC mode aan voor timer interupt
-  TCCR0B |= (1<<CS02)|(1<<CS00); // zet prescaler uit. (aan is 1024)
   OCR0A = 233; // reset timer wanneer opgegeven waarde berreikt is (15 ms)
   TCNT0 = 0; // reset timer counter
   TIMSK0 |= (1<<OCIE0A); // Enabled matching van de TCCR0A
+
   }
 
 void initTimer1()
