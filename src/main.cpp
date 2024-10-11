@@ -24,7 +24,7 @@ ISR(TIMER1_COMPA_vect)
 }
 
 void display_centibeats(uint8_t centibeats){
-  uint8_t displayArray[16];
+  uint8_t displayArray[16]; // = {0xC0.... } vond ik onoverzichtelijk
   displayArray[0] = 0xC0;
   displayArray[1] = 0xF9;
   displayArray[2] = 0xA4;
