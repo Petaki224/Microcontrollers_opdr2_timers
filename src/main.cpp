@@ -59,22 +59,22 @@ void display_centibeats(uint8_t centibeats){
     Wire.write(0x90);
     break;
   case 10:
-    Wire.write(0b10001000);
+    Wire.write(0x88);
     break;
   case 11:
-    Wire.write(0b10000011);
+    Wire.write(0x83);
     break;
   case 12:
-    Wire.write(0b11000110);
+    Wire.write(0xC6);
     break;
   case 13:
-    Wire.write(0b10100001);
+    Wire.write(0xA1);
     break;
   case 14:
-    Wire.write(0b10000110);
+    Wire.write(0x86);
     break;
   case 15:
-    Wire.write(0b10001110);
+    Wire.write(0x8E);
     break;
     
   default:
