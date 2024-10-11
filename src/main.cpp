@@ -13,13 +13,14 @@ volatile uint8_t centiBeatsCounted = 0;
 volatile uint8_t miliseconds = 0;
 const int PCF8574_address = 0x21;
 uint8_t prevCentiBeat = 0;
+const uint16_t totalTimer1Ticks = 13500;
 
 
 ISR(TIMER1_COMPA_vect)
 {
     centiBeatsCounted++;
     // display_centibeats(centiBeatsCounted);
-    PORTB |= (1<<PB5);
+    // PORTB |= (1<<PB5);
 }
 
 void display_centibeats(uint8_t centibeats){
@@ -115,11 +116,8 @@ int main(void){
 
   sei();
   Wire.begin();
-  // Wire.beginTransmission(PCF8574_address);
-  // Wire.write(0x02);
-  // Wire.endTransmission();
-  Serial.begin(9600);
-  Serial.write("Ready");
+  // Serial.begin(9600);
+  // Serial.write("Ready");
   
   while (true){   
     if (centiBeatsCounted>15)
@@ -161,7 +159,7 @@ void initTimer1()
 // TCCR1A moest alles op 0 staan, wat al default is.
 {
   TCCR1B |= (1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);
-  OCR1A = 13500;
+  OCR1A = totalTimer1Ticks;
   TIMSK1 |= (1<<OCIE1A);
   // TIFR1 |= (1<<OCF1A); geen flag nodig omdat er al een interupt wordt gegooid 
 }
