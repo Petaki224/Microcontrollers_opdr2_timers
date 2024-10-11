@@ -111,16 +111,19 @@ ISR(TIMER0_COMPA_vect){ // functie word uitgevoerd wanneer timer0 interrupt afga
 
 int main(void){
   initTimer0();
-  // initTimer1();
+  initTimer1();
   DDRB |= (1<<PB5);
 
   sei();
   Wire.begin();
-  // Serial.begin(9600);
-  // Serial.write("Ready");
+  Serial.begin(9600);
+  Serial.write("Ready");
   
   while (true){   
-    if (centiBeatsCounted>15)
+    if (lastState == pressed) {
+      PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
+
+      if (centiBeatsCounted>15)
     {
       centiBeatsCounted = 0;
       prevCentiBeat = 0;
@@ -131,9 +134,6 @@ int main(void){
       display_centibeats(centiBeatsCounted);
       prevCentiBeat = centiBeatsCounted;
       }
-
-    if (lastState == pressed) {
-      PORTB |= (1 << PB5);  // led aan als knop is ingedrukt
     } else if (lastState == released) {
       PORTB &= ~(1 << PB5);  // led uit als knop is losgelaten
       }
